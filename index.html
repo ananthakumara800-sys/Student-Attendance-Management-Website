@@ -311,6 +311,10 @@ function attendanceStatsForClass(classId){
   return {present,absent,total,percentage:total?Math.round(present/total*100):0};
 }
 
+function badge(status){
+  return `<span class="badge ${status==="Present"?"present":"absent"}">${escapeHTML(status)}</span>`;
+}
+
 function openPage(page){
   currentPage=page;
   document.querySelectorAll("#teacherNav button").forEach(btn=>{
@@ -325,12 +329,13 @@ function renderTeacherPage(){
 
   if(currentPage==="dashboard")content.innerHTML=dashboardHTML();
   else if(currentPage==="classes")content.innerHTML=classesHTML();
-  else if(currentPage==="students")content.innerHTML=studentsHTML();
-  else if(currentPage==="attendance")content.innerHTML=attendanceHTML();
-  else if(currentPage==="reports")content.innerHTML=reportsHTML();
-  else if(currentPage==="history")content.innerHTML=historyHTML();
+  else if(currentPage==="students"){content.innerHTML=studentsHTML();updateStudentList();}
+  else if(currentPage==="attendance"){content.innerHTML=attendanceHTML();}
+  else if(currentPage==="reports"){content.innerHTML=reportsHTML();renderReport();}
+  else if(currentPage==="history"){content.innerHTML=historyHTML();renderHistory();}
 }
 
+/* ---------------- Dashboard ---------------- */
 function dashboardHTML(){
   const date=today();
   const totalStudents=db.students.length;
@@ -381,6 +386,7 @@ function dashboardHTML(){
   </div>`;
 }
 
+/* ---------------- Classes ---------------- */
 function classesHTML(){
   return `
   <h2>Create Class</h2>
@@ -434,7 +440,6 @@ function deleteClass(classId){
   const c=db.classes.find(x=>x.id===classId);
   if(!c)return;
   if(!confirm("Delete class '"+c.name+"' and all its students and attendance records?"))return;
-  const ids=db.students.filter(s=>s.classId===classId).map(s=>s.id);
   db.classes=db.classes.filter(x=>x.id!==classId);
   db.students=db.students.filter(s=>s.classId!==classId);
   db.attendance=db.attendance.filter(a=>a.classId!==classId);
@@ -443,18 +448,17 @@ function deleteClass(classId){
 
 function goToStudents(classId){
   openPage("students");
-  setTimeout(()=>{
-    const select=document.getElementById("studentClassInput");
-    if(select){select.value=classId;updateStudentList();}
-  },0);
+  const select=document.getElementById("studentClassInput");
+  const filter=document.getElementById("studentListClass");
+  if(select)select.value=classId;
+  if(filter)filter.value=classId;
+  updateStudentList();
 }
 
 function goToAttendance(classId){
   openPage("attendance");
-  setTimeout(()=>{
-    const select=document.getElementById("attendanceClass");
-    if(select){select.value=classId;loadAttendanceForm();}
-  },0);
+  const select=document.getElementById("attendanceClass");
+  if(select){select.value=classId;loadAttendanceForm();}
 }
 
 function classOptions(selected=""){
@@ -463,6 +467,7 @@ function classOptions(selected=""){
   ).join("");
 }
 
+/* ---------------- Students ---------------- */
 function studentsHTML(){
   return `
   <h2>Add Student</h2>
@@ -472,7 +477,7 @@ function studentsHTML(){
       ${db.classes.length?`
       <form onsubmit="addStudent(event)">
         <label>Select Class *</label>
-        <select id="studentClassInput" required onchange="updateStudentList()">
+        <select id="studentClassInput" required onchange="syncFilter()">
           <option value="">Choose a class</option>${classOptions()}
         </select>
         <label>Roll Number *</label>
@@ -496,6 +501,13 @@ function studentsHTML(){
   </div>`;
 }
 
+function syncFilter(){
+  const sel=document.getElementById("studentClassInput");
+  const filter=document.getElementById("studentListClass");
+  if(sel && filter && sel.value){filter.value=sel.value;}
+  updateStudentList();
+}
+
 function updateStudentList(){
   const filter=document.getElementById("studentListClass");
   const target=document.getElementById("studentListResults");
@@ -517,13 +529,4 @@ function updateStudentList(){
 
 function addStudent(event){
   event.preventDefault();
-  const classId=document.getElementById("studentClassInput").value;
-  const roll=document.getElementById("studentRollInput").value.trim();
-  const name=document.getElementById("studentNameInput").value.trim();
-  const department=document.getElementById("studentDepartmentInput").value.trim();
-
-  if(!classId||!roll||!name)return;
-  const duplicate=db.students.some(s=>
-    s.classId===classId && s.roll.toLowerCase()===roll.toLowerCase()
-  );
-  if(duplicate){alert("This roll number already exists in the selected class.");return;}
+  const classId
