@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AttendEase | Student Attendance System</title>
+
+<style>
+:root {
+  --blue: #315cf5;
+  --purple: #763ce8;
+  --bg: #f5f7ff;
+  --text: #17233d;
+  --muted: #68738a;
+  --border: #e4e8f2;
+  --green: #079669;
+  --red: #e84457;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+
+.hero {
+  background: linear-gradient(120deg, #315cf5, #763ce8 60%, #d83eae);
+  color: white;
+  padding: 35px 20px 75px;
+}
+
+.hero-inner, .layout {
+  max-width: 1150px;
+  margin: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.logo {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: #ffca36;
+  color: #17233d;
+  font-size: 25px;
+  font-weight: bold;
+}
+
+.brand h1 { margin: 0 0 5px; font-size: 25px; }
+.brand p { margin: 0; opacity: .9; }
+
+.layout {
+  padding: 0 18px 35px;
+  margin-top: -42px;
+}
+
+.card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 23px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 30px #273a6810;
+}
+
+h2 { margin: 0 0 9px; font-size: 23px; }
+h3 { margin: 0 0 15px; }
+.muted { color: var(--muted); line-height: 1.6; }
+
+input, select {
+  width: 100%;
+  padding: 13px 14px;
+  margin: 7px 0;
+  border: 1px solid #dce1ed;
+  border-radius: 11px;
+  background: white;
+  color: var(--text);
+  outline-color: var(--blue);
+}
+
+.btn {
+  border: 0;
+  border-radius: 11px;
+  padding: 13px 17px;
+  background: var(--blue);
+  color: white;
+  font-weight: bold;
+  transition: .2s;
+}
+
+.btn:hover { filter: brightness(.94); }
+.btn.secondary { background: #edf0ff; color: var(--blue); }
+.btn.success { background: var(--green); }
+.btn.danger { background: var(--red); }
+.btn.full { width: 100%; margin-top: 10px; }
+
+.role-buttons, .nav, .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.role-buttons button.active {
+  background: var(--blue);
+  color: white;
+}
+
+#app { display: none; }
+
+.topbar {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  padding: 14px;
+  margin-bottom: 20px;
+}
+
+.nav button {
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 13px;
+  color: #46516a;
+  background: transparent;
+}
+
+.nav button.active {
+  background: #edf0ff;
+  color: var(--blue);
+  font-weight: bold;
+}
+
+.user-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.stat {
+  border-radius: 17px;
+  padding: 21px;
+  color: white;
+  min-height: 120px;
+}
+
+.stat p { margin: 0 0 15px; opacity: .95; }
+.stat strong { font-size: 34px; }
+.blue { background: #3264f4; }
+.green { background: #079e70; }
+.red { background: #f33c55; }
+.purple { background: #bd4ec6; }
+
+.page { display: none; }
+.page.active { display: block; }
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.section-head input { max-width: 260px; }
+
+.table-wrap { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 480px;
+}
+
+th, td {
+  text-align: left;
+  padding: 14px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+th { color: var(--muted); font-size: 13px; }
+
+.badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.badge.present { background: #d9f8e9; color: #087b50; }
+.badge.absent { background: #ffe1e5; color: #c12c43; }
+.badge.pending { background: #fff0cb; color: #916300; }
+
+.attendance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.attendance-row:last-child { border-bottom: 0; }
+.attendance-row p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+
+.attendance-row .actions .btn {
+  padding: 9px 12px;
+  font-size: 13px;
+}
+
+.empty {
+  padding: 25px 5px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.note {
+  background: #fff6df;
+  color: #775313;
+  padding: 13px;
+  border-radius: 12px;
+  line-height: 1.6;
+  font-size: 13px;
+  margin-top: 15px;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  background: #17233d;
+  color: white;
+  border-radius: 12px;
+  padding: 13px 18px;
+  display: none;
+  z-index: 10;
+  max-width: 90%;
+}
+
+footer {
+  text-align: center;
+  padding: 20px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@media (max-width: 750px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero { padding-top: 25px; }
+  .card { padding: 18px; }
+  .attendance-row { align-items: flex-start; }
+  .attendance-row .actions { flex-direction: column; }
+}
+
+@media (max-width: 390px) {
+  .grid { grid-template-columns: 1fr; }
+  .attendance-row { flex-direction: column; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="brand">
+      <div class="logo">A</div>
+      <div>
+        <h1>AttendEase</h1>
+        <p>Student Attendance Management System</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="layout">
+
+  <!-- LOGIN -->
+  <section id="login" class="card">
+    <h2>Welcome to AttendEase 👋</h2>
+    <p class="muted">Manage attendance easily, every day.</p>
+
+    <h3>Choose your account</h3>
+    <div class="role-buttons">
+      <button class="btn secondary active" id="teacherRole"
+        onclick="chooseRole('Teacher')">👩‍🏫 Teacher</button>
+      <button class="btn secondary" id="studentRole"
+        onclick="chooseRole('Student')">🎓 Student</button>
+    </div>
+
+    <form id="loginForm">
+      <label for="loginName">Full name</label>
+      <input id="loginName" placeholder="Enter your name" required>
+
+      <label for="loginId">Email or Register Number</label>
+      <input id="loginId" placeholder="Enter your email or register number"
+        required>
+
+      <button class="btn full" type="submit">Continue to Dashboard →</button>
+    </form>
+
+    <div class="note">
+      Demo mode: this screen does not verify your identity. Google
+      authentication and secure teacher account verification must be
+      connected through Firebase before real use.
+    </div>
+  </section>
+
+  <!-- APPLICATION -->
+  <section id="app">
+
+    <div class="topbar">
+      <nav class="nav">
+        <button class="active" data-page="dashboard">🏠 Dashboard</button>
+        <button data-page="attendance" class="teacher-only">📝 Mark Attendance</button>
+        <button data-page="students" class="teacher-only">🎓 Students</button>
+        <button data-page="reports">📊 Reports</button>
+        <button data-page="profile">👤 Profile</button>
+      </nav>
+
+      <div class="user-row">
+        <div>
+          <strong id="welcomeName">Welcome!</strong>
+          <div class="muted" id="userRoleLabel">Teacher</div>
+        </div>
+        <button class="btn secondary" id="logout">Sign out</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="page active">
+      <div class="card">
+        <h2 id="welcomeTitle">Welcome back! 👋</h2>
+        <p class="muted" id="todayDate"></p>
+      </div>
+
+      <div class="grid">
+        <div class="stat blue">
+          <p>Total Students</p>
+          <strong id="totalStudents">0</strong>
+        </div>
+        <div class="stat green">
+          <p>Present Today</p>
+          <strong id="presentToday">0</strong>
+        </div>
+        <div class="stat red">
+          <p>Absent Today</p>
+          <strong id="absentToday">0</strong>
+        </div>
+        <div class="stat purple">
+          <p>Days Recorded</p>
+          <strong id="daysRecorded">0</strong>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Quick Actions ⚡</h3>
+        <p class="muted">Go directly to the feature you need.</p>
+        <div class="actions">
+          <button class="btn teacher-only" onclick="showPage('attendance')">
+            Mark Attendance
+          </button>
+          <button class="btn secondary teacher-only"
+            onclick="showPage('students')">Manage Students</button>
+          <button class="btn secondary" onclick="showPage('reports')">
+            View Reports
+          </button>
+        </div>
+      </div>
+
+      <div class="card student-only" id="studentSummary">
+        <h3>My Attendance</h3>
+        <p class="muted">Your attendance percentage
